@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindOS | Personal Workspace</title>
+<style>
+/* --- NOTION-INSPIRED THEME --- */
+:root {
+    --bg-body: #ffffff;
+    --bg-sidebar: #f7f7f5;
+    --bg-hover: #efefef;
+    --bg-block: #f1f0ef;
+    
+    --text-main: #37352f;
+    --text-muted: #787774;
+    --text-light: #9b9a97;
+    
+    --border: #e9e9e7;
+    --selection: #cce9ff;
+    
+    --accent: #2eaadc; /* Notion Blue-ish */
+    --accent-red: #e03e3e;
+    --accent-green: #0f7b6c;
+    --accent-orange: #d9730d;
+    
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif;
+    --font-editor: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    
+    --shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+* { box-sizing: border-box; outline: none; }
+
+body {
+    margin: 0;
+    font-family: var(--font-ui);
+    color: var(--text-main);
+    background: var(--bg-body);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* --- SIDEBAR --- */
+aside {
+    width: 240px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    flex-shrink: 0;
+    transition: width 0.2s;
+}
+
+.user-profile {
+    padding: 0 16px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--text-main);
+    border-bottom: 1px solid var(--border);
+}
+.avatar { width: 24px; height: 24px; background: var(--text-main); color: white; border-radius: 4px; display: grid; place-items: center; font-size: 14px; }
+
+.nav-menu { flex: 1; overflow-y: auto; padding: 8px 4px; }
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: 0.1s;
+    user-select: none;
+    margin-bottom: 2px;
+}
+.nav-item:hover { background: var(--bg-hover); color: var(--text-main); }
+.nav-item.active { background: var(--bg-hover); color: var(--text-main); font-weight: 600; }
+.nav-icon { width: 18px; text-align: center; font-size: 16px; }
+
+.sidebar-foot {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-light);
+}
+.sidebar-foot a { color: var(--text-light); text-decoration: none; border-bottom: 1px dotted var(--text-light); }
+
+/* --- MAIN AREA --- */
+main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 40px 60px;
+    scroll-behavior: smooth;
+}
+
+.view { display: none; max-width: 900px; margin: 0 auto; animation: fadein 0.2s ease-out; }
+.view.active { display: block; }
+
+@keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- TYPOGRAPHY & COMPONENTS --- */
+h1 { font-size: 40px; font-weight: 700; margin: 0 0 20px; letter-spacing: -0.5px; }
+h2 { font-size: 24px; font-weight: 600; margin: 30px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+h3 { font-size: 18px; font-weight: 600; margin: 20px 0 10px; }
+p { color: var(--text-muted); margin-bottom: 16px; }
+
+.card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    background: white;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    transition: 0.2s;
+}
+.card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+button.btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: 0.1s;
+}
+button.btn:hover { background: var(--bg-hover); color: var(--text-main); }
+button.btn-primary { background: var(--text-main); color: white; border-color: var(--text-main); }
+button.btn-primary:hover { background: #555; }
+button.btn-text { border: none; padding: 4px; }
+button.btn-text:hover { background: var(--bg-hover); }
+
+input, textarea, select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-main);
+    background: #fdfdfd;
+    transition: 0.2s;
+}
+input:focus, textarea:focus { border-color: #aaa; background: white; }
+
+/* --- DASHBOARD SPECIFIC --- */
+.task-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+.task-check { cursor: pointer; width: 18px; height: 18px; }
+.task-text { flex: 1; }
+.task-text.done { text-decoration: line-through; color: var(--text-light); }
+
+.link-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.link-card { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; text-decoration: none; color: var(--text-main); transition: 0.1s; }
+.link-card:hover { background: var(--bg-hover); }
+
+/* --- PLANNER --- */
+.time-block { display: flex; border-bottom: 1px solid var(--border); }
+.time-label { width: 80px; padding: 12px; color: var(--text-muted); font-size: 12px; border-right: 1px solid var(--border); text-align: right; }
+.time-input { border: none; background: transparent; padding: 12px; height: 100%; flex: 1; }
+.time-input:focus { background: var(--bg-block); }
+
+/* --- DECISION MATRIX --- */
+.matrix-table { width: 100%; border-collapse: collapse; }
+.matrix-table th { text-align: left; padding: 8px; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
+.matrix-table td { border-bottom: 1px solid var(--border); padding: 8px; }
+.matrix-score { font-weight: bold; font-family: var(--font-editor); }
+
+/* --- KNOWLEDGE / NOTES --- */
+.note-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin-top: 20px; }
+.note-card { background: #fffbe6; /* Sticky note yellow-ish */ border: none; box-shadow: var(--shadow); padding: 20px; height: 200px; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+.note-card:nth-child(2n) { background: #fdfdfd; border: 1px solid var(--border); }
+.note-tag { font-size: 11px; text-transform: uppercase; color: var(--text-muted); background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-bottom: 8px; }
+
+/* --- JOURNAL --- */
+.journal-entry { padding: 20px; border-left: 2px solid var(--border); margin-left: 20px; position: relative; }
+.journal-entry::before { content: ''; position: absolute; left: -6px; top: 24px; width: 10px; height: 10px; background: var(--text-light); border-radius: 50%; }
+.journal-date { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+.journal-mood { font-size: 20px; margin-right: 10px; }
+
+@media print {
+    aside { display: none; }
+    main { padding: 0; }
+    .no-print { display: none; }
+}
+
+@media (max-width: 768px) {
+    body { flex-direction: column; overflow: auto; }
+    aside { width: 100%; height: auto; border-bottom: 1px solid var(--border); }
+    main { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<aside>
+    <div class="user-profile">
+        <div class="avatar">M</div>
+        <span>MindOS</span>
+    </div>
+    
+    <div class="nav-menu">
+        <div class="nav-item active" onclick="nav('dash')">
+            <span class="nav-icon">🏠</span> Dashboard
+        </div>
+        <div class="nav-item" onclick="nav('planner')">
+            <span class="nav-icon">📅</span> Planner
+        </div>
+        <div class="nav-item" onclick="nav('brain')">
+            <span class="nav-icon">🧠</span> Second Brain
+        </div>
+        <div class="nav-item" onclick="nav('decision')">
+            <span class="nav-icon">⚖️</span> Decision Matrix
+        </div>
+        <div class="nav-item" onclick="nav('journal')">
+            <span class="nav-icon">📔</span> Journal
+        </div>
+    </div>
+
+    <div class="sidebar-foot">
+        Made with &hearts; by <a href="https://www.mehranshahmiri.com" target="_blank">Mehran Shahmiri</a>
+    </div>
+</aside>
+
+<main>
+
+    <!-- 1. DASHBOARD -->
+    <div id="dash" class="view active">
+        <h1 id="greeting">Good Morning</h1>
+        <p>Here is your daily overview.</p>
+        
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+            <div>
+                <h3>Quick Links <button class="btn-text" onclick="addLink()">+</button></h3>
+                <div class="link-grid" id="link-list">
+                    <!-- Links -->
+                </div>
+
+                <h3>Focus Tasks</h3>
+                <div class="card">
+                    <div class="input-group" style="display:flex; gap:10px; margin-bottom:10px;">
+                        <input id="task-in" placeholder="Add a new task..." onkeypress="if(event.key==='Enter') addTask()">
+                    </div>
+                    <div id="task-list">
+                        <!-- Tasks -->
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3>Scratchpad</h3>
+                <textarea id="scratchpad" style="height: 300px; resize: none; background: #fffefc; line-height: 1.6;" placeholder="Type anything here... it autosaves." oninput="saveScratch()"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. PLANNER -->
+    <div id="planner" class="view">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1>Daily Planner</h1>
+            <button class="btn no-print" onclick="window.print()">Print View</button>
+        </div>
+        <p>Time blocking strategy. Clear your mind by scheduling it.</p>
+        
+        <div class="card" style="padding: 0; overflow: hidden;" id="planner-container">
+            <!-- Time Blocks -->
+        </div>
+    </div>
+
+    <!-- 3. SECOND BRAIN -->
+    <div id="brain" class="view">
+        <h1>Second Brain</h1>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <input id="note-in" placeholder="Capture a thought..." style="flex:1">
+            <input id="note-tag" placeholder="Tag (e.g. idea)" style="width:120px">
+            <button class="btn-primary" onclick="addNote()">Capture</button>
+        </div>
+        
+        <input placeholder="Search notes..." onkeyup="filterNotes(this.value)" style="margin-bottom:10px; background:var(--bg-block); border:none;">
+        
+        <div class="note-grid" id="note-list">
+            <!-- Notes -->
+        </div>
+    </div>
+
+    <!-- 4. DECISION MATRIX -->
+    <div id="decision" class="view">
+        <h1>Decision Matrix</h1>
+        <p>Weighted scoring system for difficult choices.</p>
+        
+        <div class="card">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
+                <input id="opt-a" placeholder="Option A Name" value="Option A">
+                <input id="opt-b" placeholder="Option B Name" value="Option B">
+            </div>
+            
+            <table class="matrix-table">
+                <thead>
+                    <tr>
+                        <th width="40%">Factor</th>
+                        <th width="10%">Weight (1-5)</th>
+                        <th>Opt A Score (1-10)</th>
+                        <th>Opt B Score (1-10)</th>
+                        <th width="5%"></th>
+                    </tr>
+                </thead>
+                <tbody id="matrix-rows"></tbody>
+            </table>
+            
+            <button class="btn" style="margin-top:10px;" onclick="addFactorRow()">+ Add Factor</button>
+            
+            <div style="margin-top:20px; padding:15px; background:var(--bg-block); border-radius:6px; display:flex; justify-content:space-between;">
+                <strong>Total Score:</strong>
+                <div>
+                    <span id="score-a" style="color:var(--accent); font-size:18px; font-weight:bold; margin-right:20px;">0</span>
+                    <span id="score-b" style="color:var(--accent-orange); font-size:18px; font-weight:bold;">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. JOURNAL -->
+    <div id="journal" class="view">
+        <h1>Journal</h1>
+        <div class="card">
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <select id="mood-in" style="width:auto;">
+                    <option value="😐">😐 Neutral</option>
+                    <option value="🙂">🙂 Good</option>
+                    <option value="🤩">🤩 Amazing</option>
+                    <option value="😤">😤 Frustrated</option>
+                    <option value="😔">😔 Sad</option>
+                    <option value="⚡">⚡ Energetic</option>
+                </select>
+                <input id="journal-in" placeholder="How are you feeling today?" onkeypress="if(event.key==='Enter') addEntry()">
+                <button class="btn-primary" onclick="addEntry()">Log</button>
+            </div>
+        </div>
+        
+        <div id="journal-list">
+            <!-- Entries -->
+        </div>
+    </div>
+
+</main>
+
+<script>
+    // --- STATE MANAGEMENT ---
+    const DB = {
+        get: (k, def) => JSON.parse(localStorage.getItem('mindos_'+k) || JSON.stringify(def)),
+        set: (k, v) => localStorage.setItem('mindos_'+k, JSON.stringify(v))
+    };
+
+    // --- NAVIGATION ---
+    function nav(id) {
+        document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    // --- DASHBOARD ---
+    function initDash() {
+        const h = new Date().getHours();
+        const msg = h < 12 ? 'Good Morning' : h < 18 ? 'Good Afternoon' : 'Good Evening';
+        document.getElementById('greeting').innerText = msg;
+        
+        document.getElementById('scratchpad').value = localStorage.getItem('mindos_scratch') || '';
+        renderLinks();
+        renderTasks();
+    }
+
+    function saveScratch() {
+        localStorage.setItem('mindos_scratch', document.getElementById('scratchpad').value);
+    }
+
+    // Links
+    function renderLinks() {
+        const links = DB.get('links', [
+            {t:'Gmail', u:'https://gmail.com', i:'📧'},
+            {t:'ChatGPT', u:'https://chat.openai.com', i:'🤖'}
+        ]);
+        const html = links.map((l,i) => `
+            <a href="${l.u}" target="_blank" class="link-card" oncontextmenu="remLink(${i}); return false;">
+                <span style="font-size:20px">${l.i}</span> <b>${l.t}</b>
+            </a>
+        `).join('');
+        document.getElementById('link-list').innerHTML = html;
+    }
+    
+    function addLink() {
+        const t = prompt('Title:');
+        const u = prompt('URL:', 'https://');
+        const i = prompt('Emoji Icon:', '🔗');
+        if(t && u) {
+            const l = DB.get('links', []);
+            l.push({t,u,i});
+            DB.set('links', l);
+            renderLinks();
+        }
+    }
+    
+    function remLink(i) {
+        if(confirm('Delete link?')) {
+            const l = DB.get('links', []);
+            l.splice(i,1);
+            DB.set('links', l);
+            renderLinks();
+        }
+    }
+
+    // Tasks
+    function renderTasks() {
+        const tasks = DB.get('tasks', []);
+        const html = tasks.map((t,i) => `
+            <div class="task-item">
+                <input type="checkbox" class="task-check" ${t.done?'checked':''} onchange="togTask(${i})">
+                <span class="task-text ${t.done?'done':''}">${t.txt}</span>
+                <button class="btn-text" onclick="delTask(${i})" style="color:var(--text-light)">×</button>
+            </div>
+        `).join('');
+        document.getElementById('task-list').innerHTML = html || '<div style="color:#ccc; font-style:italic; padding:10px;">No tasks yet.</div>';
+    }
+
+    function addTask() {
+        const txt = document.getElementById('task-in').value.trim();
+        if(txt) {
+            const t = DB.get('tasks', []);
+            t.unshift({txt, done:false});
+            DB.set('tasks', t);
+            document.getElementById('task-in').value = '';
+            renderTasks();
+        }
+    }
+
+    function togTask(i) {
+        const t = DB.get('tasks', []);
+        t[i].done = !t[i].done;
+        DB.set('tasks', t);
+        renderTasks();
+    }
+
+    function delTask(i) {
+        const t = DB.get('tasks', []);
+        t.splice(i,1);
+        DB.set('tasks', t);
+        renderTasks();
+    }
+
+    // --- PLANNER ---
+    function initPlanner() {
+        const hours = ['6 AM','7 AM','8 AM','9 AM','10 AM','11 AM','12 PM','1 PM','2 PM','3 PM','4 PM','5 PM','6 PM','7 PM','8 PM','9 PM'];
+        const saved = DB.get('planner', {});
+        const today = new Date().toDateString();
+        
+        // Reset if new day (optional logic, keeping simple here)
+        
+        const html = hours.map(h => `
+            <div class="time-block">
+                <div class="time-label">${h}</div>
+                <input class="time-input" placeholder="Block this time..." 
+                    value="${saved[h] || ''}" 
+                    oninput="savePlan('${h}', this.value)">
+            </div>
+        `).join('');
+        document.getElementById('planner-container').innerHTML = html;
+    }
+
+    function savePlan(h, val) {
+        const s = DB.get('planner', {});
+        s[h] = val;
+        DB.set('planner', s);
+    }
+
+    // --- BRAIN (NOTES) ---
+    function renderNotes(filter = '') {
+        const notes = DB.get('notes', []);
+        let html = '';
+        notes.forEach((n,i) => {
+            if(filter && !n.txt.toLowerCase().includes(filter.toLowerCase()) && !n.tag.includes(filter)) return;
+            html += `
+                <div class="note-card">
+                    <span class="note-tag">#${n.tag}</span>
+                    <p style="color:#333; font-size:14px; flex:1; overflow-y:auto;">${n.txt}</p>
+                    <button class="btn-text" onclick="delNote(${i})" style="position:absolute; bottom:10px; right:10px; color:#999">Delete</button>
+                    <div style="font-size:10px; color:#aaa; margin-top:10px;">${new Date(n.date).toLocaleDateString()}</div>
+                </div>
+            `;
+        });
+        document.getElementById('note-list').innerHTML = html;
+    }
+
+    function addNote() {
+        const txt = document.getElementById('note-in').value;
+        const tag = document.getElementById('note-tag').value || 'general';
+        if(txt) {
+            const n = DB.get('notes', []);
+            n.unshift({txt, tag, date: Date.now()});
+            DB.set('notes', n);
+            document.getElementById('note-in').value = '';
+            renderNotes();
+        }
+    }
+    
+    function delNote(i) {
+        const n = DB.get('notes', []);
+        n.splice(i,1);
+        DB.set('notes', n);
+        renderNotes();
+    }
+    
+    function filterNotes(val) { renderNotes(val); }
+
+    // --- DECISION MATRIX ---
+    let factors = [{name:'Cost', w:5, a:5, b:5}];
+    
+    function renderMatrix() {
+        const html = factors.map((f, i) => `
+            <tr>
+                <td><input value="${f.name}" oninput="updFact(${i}, 'name', this.value)" style="border:none"></td>
+                <td><input type="number" min="1" max="5" value="${f.w}" oninput="updFact(${i}, 'w', this.value)" style="width:60px"></td>
+                <td><input type="number" min="1" max="10" value="${f.a}" oninput="updFact(${i}, 'a', this.value)" style="width:60px"></td>
+                <td><input type="number" min="1" max="10" value="${f.b}" oninput="updFact(${i}, 'b', this.value)" style="width:60px"></td>
+                <td><button class="btn-text" onclick="delFact(${i})">×</button></td>
+            </tr>
+        `).join('');
+        document.getElementById('matrix-rows').innerHTML = html;
+        calcMatrix();
+    }
+    
+    function updFact(i, k, v) {
+        factors[i][k] = k === 'name' ? v : parseInt(v);
+        calcMatrix();
+    }
+    
+    function delFact(i) {
+        factors.splice(i,1);
+        renderMatrix();
+    }
+    
+    function addFactorRow() {
+        factors.push({name:'', w:1, a:5, b:5});
+        renderMatrix();
+    }
+    
+    function calcMatrix() {
+        let sa = 0, sb = 0;
+        factors.forEach(f => {
+            sa += f.w * f.a;
+            sb += f.w * f.b;
+        });
+        document.getElementById('score-a').innerText = sa;
+        document.getElementById('score-b').innerText = sb;
+    }
+
+    // --- JOURNAL ---
+    function renderJournal() {
+        const entries = DB.get('journal', []);
+        const html = entries.map(e => `
+            <div class="journal-entry">
+                <div class="journal-date">${new Date(e.date).toLocaleString()}</div>
+                <div><span class="journal-mood">${e.mood}</span> ${e.txt}</div>
+            </div>
+        `).join('');
+        document.getElementById('journal-list').innerHTML = html;
+    }
+
+    function addEntry() {
+        const txt = document.getElementById('journal-in').value;
+        const mood = document.getElementById('mood-in').value;
+        if(txt) {
+            const e = DB.get('journal', []);
+            e.unshift({txt, mood, date: Date.now()});
+            DB.set('journal', e);
+            document.getElementById('journal-in').value = '';
+            renderJournal();
+        }
+    }
+
+    // --- INIT ALL ---
+    initDash();
+    initPlanner();
+    renderNotes();
+    renderMatrix();
+    renderJournal();
+    
+    // Auto-save Matrix state (optional, just keeping factors in memory for now for single session, but could be DB.set)
+
+</script>
+</body>
+</html>
